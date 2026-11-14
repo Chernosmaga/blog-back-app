@@ -25,5 +25,6 @@ CREATE TABLE comments (
 CREATE TABLE files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     filename TEXT NOT NULL,
-    file_url TEXT NOT NULL
+    content BYTEA NOT NULL,
+    post_id UUID NOT NULL REFERENCES post(id) ON DELETE CASCADE
 );
