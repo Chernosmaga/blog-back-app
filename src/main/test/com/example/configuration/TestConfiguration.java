@@ -1,13 +1,16 @@
 package com.example.configuration;
 
+import com.example.mapper.CommentMapper;
 import com.example.mapper.PostMapper;
 import com.example.repository.CommentRepository;
+import com.example.repository.JdbcCommentRepository;
 import com.example.repository.JdbcPostRepository;
 import com.example.repository.PostRepository;
+import com.example.service.CommentService;
+import com.example.service.CommentServiceImpl;
 import com.example.service.PostService;
 import com.example.service.PostServiceImpl;
 import org.mapstruct.factory.Mappers;
-import org.mockito.Mockito;
 import org.postgresql.Driver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -50,17 +53,29 @@ public class TestConfiguration {
     }
 
     @Bean
+    public CommentService commentService(CommentRepository commentRepository,
+                                         PostRepository postRepository,
+                                         CommentMapper commentMapper) {
+        return new CommentServiceImpl(commentRepository, postRepository, commentMapper);
+    }
+
+    @Bean
     public PostRepository postRepository(JdbcTemplate jdbcTemplate) {
         return new JdbcPostRepository(jdbcTemplate);
     }
 
     @Bean
-    public CommentRepository commentRepository() {
-        return Mockito.mock(CommentRepository.class);
+    public CommentRepository commentRepository(JdbcTemplate jdbcTemplate) {
+        return new JdbcCommentRepository(jdbcTemplate);
     }
 
     @Bean
     public PostMapper postMapper() {
         return Mappers.getMapper(PostMapper.class);
+    }
+
+    @Bean
+    public CommentMapper commentMapper() {
+        return Mappers.getMapper(CommentMapper.class);
     }
 }
