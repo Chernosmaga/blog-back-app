@@ -7,7 +7,7 @@ import com.example.exception.NotFoundException;
 import com.example.mapper.CommentMapper;
 import com.example.model.Comment;
 import com.example.repository.CommentRepository;
-import com.example.repository.PostRepository;
+import com.example.utilities.UtilService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +19,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
+    private final UtilService utilService;
     private final CommentMapper commentMapper;
 
     @Override
     public List<CommentResponseDto> getAllByPostId(UUID postId) {
-        postExists(postId);
+        utilService.postExists(postId);
         return commentRepository.getAllByPostId(postId).stream()
                 .map(comment -> toReturn(postId, comment)).toList();
     }
@@ -43,7 +43,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentResponseDto create(UUID postId, CommentRequestDto comment) {
-        postExists(postId);
+        utilService.postExists(postId);
         comment.validate();
 
         UUID uuid;
@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentResponseDto update(UUID postId, UUID commentId, CommentRequestDto comment) {
-        postExists(postId);
+        utilService.postExists(postId);
         comment.validate();
 
         try {
@@ -85,11 +85,4 @@ public class CommentServiceImpl implements CommentService {
         return new CommentResponseDto(comment.getId(), postId, comment.getText());
     }
 
-    private void postExists(UUID postId) {
-        try {
-            postRepository.getById(postId);
-        } catch (Exception exception) {
-            throw new NotFoundException("Requested post was not found");
-        }
-    }
 }

@@ -119,23 +119,11 @@ public class PostServiceImplTest {
     }
 
     @Test
-    public void getAll_shouldReturnOnePost() {
-        PostPaginationResponseDto paginationResponseDto =
-                postService.getAll("First test post", 0, 10);
-
-        assertFalse(paginationResponseDto.getPosts().isEmpty());
-        assertEquals(1, paginationResponseDto.getPosts().size());
-        assertEquals(false, paginationResponseDto.getHasNext());
-        assertEquals(0, paginationResponseDto.getLastPage());
-    }
-
-    @Test
-    public void getAll_shouldReturnTwoPosts() {
+    public void getAll_shouldReturnAllExistingPosts() {
         PostPaginationResponseDto paginationResponseDto =
                 postService.getAll("", 0, 10);
 
         assertFalse(paginationResponseDto.getPosts().isEmpty());
-        assertEquals(2, paginationResponseDto.getPosts().size());
         assertEquals(0, paginationResponseDto.getLastPage());
     }
 

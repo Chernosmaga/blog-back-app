@@ -2,14 +2,9 @@ package com.example.configuration;
 
 import com.example.mapper.CommentMapper;
 import com.example.mapper.PostMapper;
-import com.example.repository.CommentRepository;
-import com.example.repository.JdbcCommentRepository;
-import com.example.repository.JdbcPostRepository;
-import com.example.repository.PostRepository;
-import com.example.service.CommentService;
-import com.example.service.CommentServiceImpl;
-import com.example.service.PostService;
-import com.example.service.PostServiceImpl;
+import com.example.repository.*;
+import com.example.service.*;
+import com.example.utilities.UtilService;
 import org.mapstruct.factory.Mappers;
 import org.postgresql.Driver;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,9 +49,9 @@ public class TestConfiguration {
 
     @Bean
     public CommentService commentService(CommentRepository commentRepository,
-                                         PostRepository postRepository,
+                                         UtilService utilService,
                                          CommentMapper commentMapper) {
-        return new CommentServiceImpl(commentRepository, postRepository, commentMapper);
+        return new CommentServiceImpl(commentRepository, utilService, commentMapper);
     }
 
     @Bean
@@ -77,5 +72,20 @@ public class TestConfiguration {
     @Bean
     public CommentMapper commentMapper() {
         return Mappers.getMapper(CommentMapper.class);
+    }
+
+    @Bean
+    public UtilService utilService(PostRepository postRepository) {
+        return new UtilService(postRepository);
+    }
+
+    @Bean
+    public FileRepository fileRepository(JdbcTemplate jdbcTemplate) {
+        return new JdbcFileRepository(jdbcTemplate);
+    }
+
+    @Bean
+    public FileServiceImpl fileService(FileRepository fileRepository, UtilService utilService) {
+        return new FileServiceImpl(fileRepository, utilService);
     }
 }
