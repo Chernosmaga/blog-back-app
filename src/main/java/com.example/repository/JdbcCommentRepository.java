@@ -49,4 +49,9 @@ public class JdbcCommentRepository implements CommentRepository {
                 Long.class, postId);
         return count != null ? count : 0;
     }
+
+    @Override
+    public void deleteAll() {
+        jdbcTemplate.update("delete from comments");
+    }
 }

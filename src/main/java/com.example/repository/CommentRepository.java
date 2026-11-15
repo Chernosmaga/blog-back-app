@@ -17,4 +17,6 @@ public interface CommentRepository {
     void delete(UUID postId, UUID commentId);
 
     long countForPost(UUID postId);
+
+    void deleteAll();
 }

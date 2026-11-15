@@ -8,6 +8,7 @@ import com.example.exception.DataViolationException;
 import com.example.exception.NotFoundException;
 import com.example.exception.ValidationException;
 import com.example.model.Post;
+import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import com.example.service.CommentService;
 import com.example.service.PostService;
@@ -28,43 +29,50 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {TestConfiguration.class})
 public class CommentServiceImplTest {
     private final PostService postService;
+    private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentService commentService;
 
-    private UUID mockPostId;
-    private final Post MOCK_POST = new Post(UUID.randomUUID(),
-            "First test post",
-            "First test post description",
-            0L,
-            List.of("First tag"));
-
     @Autowired
     public CommentServiceImplTest(PostService postService,
+                                  CommentRepository commentRepository,
                                   PostRepository postRepository,
                                   CommentService commentService) {
         this.postService = postService;
+        this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.commentService = commentService;
     }
 
     @BeforeEach
     public void beforeEach() {
-        mockPostId = postRepository.create(MOCK_POST);
-        postRepository.addTags(mockPostId, MOCK_POST.getTags());
+        commentRepository.deleteAll();
+
+        Post mockPost = new Post(UUID.randomUUID(),
+                "First test post",
+                "First test post description",
+                0L,
+                List.of("First tag"));
+
+        var mockPostId = postRepository.create(mockPost);
+        postRepository.addTags(mockPostId, mockPost.getTags());
     }
 
     @AfterEach
     public void afterEach() {
-        postRepository.delete(mockPostId);
+        postRepository.deleteAll();
     }
 
     @Test
     public void create_shouldCreateComment() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "First comment"));
 
         assertNotNull(commentResponseDto);
-        assertEquals(mockPostId, commentResponseDto.getPostId());
+        assertEquals(firstPost.getId(), commentResponseDto.getPostId());
         assertEquals("First comment", commentResponseDto.getText());
     }
 
@@ -77,32 +85,45 @@ public class CommentServiceImplTest {
 
     @Test
     public void create_shouldThrowExceptionIfTextIsEmpty() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+
         assertThrows(ValidationException.class,
-                () -> commentService.create(mockPostId, new CommentRequestDto(mockPostId, "")));
+                () -> commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "")));
     }
 
     @Test
     public void create_shouldThrowExceptionIfPostIdIsNull() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+
         assertThrows(ValidationException.class,
-                () -> commentService.create(mockPostId, new CommentRequestDto(null, "Updated comment")));
+                () -> commentService.create(firstPost.getId(),
+                        new CommentRequestDto(null, "Updated comment")));
     }
 
     @Test
     public void getByIdAndPostId_shouldReturnComment() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "Second comment"));
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "Second comment"));
         CommentResponseDto returnedComment =
                 commentService.getByIdAndPostId(commentResponseDto.getId(), commentResponseDto.getPostId());
 
         assertNotNull(returnedComment);
         assertEquals("Second comment", returnedComment.getText());
-        assertEquals(mockPostId, returnedComment.getPostId());
+        assertEquals(firstPost.getId(), returnedComment.getPostId());
     }
 
     @Test
     public void getByIdAndPostId_shouldThrowExceptionIfPostNotFound() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "Second comment"));
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "Second comment"));
 
         assertThrows(NotFoundException.class,
                 () -> commentService.getByIdAndPostId(commentResponseDto.getId(), UUID.randomUUID()));
@@ -110,15 +131,20 @@ public class CommentServiceImplTest {
 
     @Test
     public void getByIdAndPostId_shouldThrowExceptionIfCommentNotFound() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+
         assertThrows(NotFoundException.class,
-                () -> commentService.getByIdAndPostId(UUID.randomUUID(), mockPostId));
+                () -> commentService.getByIdAndPostId(UUID.randomUUID(), firstPost.getId()));
     }
 
     @Test
     public void getAllByPostId_shouldReturnTwoComments() {
-        commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
-        commentService.create(mockPostId, new CommentRequestDto(mockPostId, "Second comment"));
-        List<CommentResponseDto> comments = commentService.getAllByPostId(mockPostId);
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "First comment"));
+        commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "Second comment"));
+        List<CommentResponseDto> comments = commentService.getAllByPostId(firstPost.getId());
 
         assertFalse(comments.isEmpty());
         assertEquals(2, comments.size());
@@ -132,27 +158,35 @@ public class CommentServiceImplTest {
 
     @Test
     public void getAllByPostId_shouldReturnNoComments() {
-        List<CommentResponseDto> comments = commentService.getAllByPostId(mockPostId);
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        List<CommentResponseDto> comments = commentService.getAllByPostId(firstPost.getId());
 
         assertTrue(comments.isEmpty());
     }
 
     @Test
     public void update_shouldUpdateComment() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
-        CommentResponseDto updated = commentService.update(mockPostId, commentResponseDto.getId(),
-                new CommentRequestDto(mockPostId, "Updated comment"));
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "First comment"));
+        CommentResponseDto updated = commentService.update(firstPost.getId(), commentResponseDto.getId(),
+                new CommentRequestDto(firstPost.getId(), "Updated comment"));
 
         assertEquals("Updated comment", updated.getText());
-        assertEquals(mockPostId, updated.getPostId());
+        assertEquals(firstPost.getId(), updated.getPostId());
         assertEquals(commentResponseDto.getId(), updated.getId());
     }
 
     @Test
     public void update_shouldThrowExceptionIfPostNotFound() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "First comment"));
         UUID uuid = UUID.randomUUID();
 
         assertThrows(NotFoundException.class, () -> commentService.update(uuid, commentResponseDto.getId(),
@@ -161,40 +195,67 @@ public class CommentServiceImplTest {
 
     @Test
     public void update_shouldThrowExceptionIfCommentNotFound() {
-        assertThrows(DataViolationException.class, () -> commentService.update(mockPostId, UUID.randomUUID(),
-                new CommentRequestDto(mockPostId, "Updated comment")));
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+
+        assertThrows(DataViolationException.class, () -> commentService.update(firstPost.getId(), UUID.randomUUID(),
+                new CommentRequestDto(firstPost.getId(), "Updated comment")));
     }
 
     @Test
     public void update_shouldThrowExceptionIfTextIsEmpty() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
+                commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "First comment"));
 
-        assertThrows(ValidationException.class, () -> commentService.update(mockPostId, commentResponseDto.getId(),
-                new CommentRequestDto(mockPostId, "")));
+        assertThrows(ValidationException.class,
+                () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
+                        new CommentRequestDto(firstPost.getId(), "")));
     }
 
     @Test
     public void update_shouldThrowExceptionIfPostIdIsNull() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "First comment"));
 
-        assertThrows(ValidationException.class, () -> commentService.update(mockPostId, commentResponseDto.getId(),
+        assertThrows(ValidationException.class,
+                () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
                 new CommentRequestDto(null, "Updated comment")));
     }
 
     @Test
     public void delete_shouldDeleteComment() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
         CommentResponseDto commentResponseDto =
-                commentService.create(mockPostId, new CommentRequestDto(mockPostId, "First comment"));
-        commentService.delete(mockPostId, commentResponseDto.getId());
-        PostResponseDto post = postService.getById(mockPostId);
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "First comment"));
+        commentService.delete(firstPost.getId(), commentResponseDto.getId());
+        PostResponseDto post = postService.getById(firstPost.getId());
 
         assertEquals(0, (long) post.getCommentsCount());
     }
 
     @Test
     public void delete_shouldThrowExceptionIfCommentNotFound() {
-        assertThrows(NotFoundException.class, () -> commentService.delete(mockPostId, UUID.randomUUID()));
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+
+        assertThrows(NotFoundException.class, () -> commentService.delete(firstPost.getId(), UUID.randomUUID()));
+    }
+
+    @Test
+    public void shouldReturnCorrectCommentsCount() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "First comment"));
+        commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "Second comment"));
+        var returnedPost = postService.getById(firstPost.getId());
+
+        assertEquals(2, returnedPost.getCommentsCount());
     }
 }

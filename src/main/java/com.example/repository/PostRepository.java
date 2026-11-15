@@ -23,4 +23,6 @@ public interface PostRepository {
     void addTags(UUID postId, List<String> tags);
 
     void deleteTags(UUID postId);
+
+    void deleteAll();
 }

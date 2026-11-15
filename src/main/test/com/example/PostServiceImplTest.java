@@ -28,19 +28,6 @@ public class PostServiceImplTest {
     private final PostService postService;
     private final PostRepository postRepository;
 
-    private final Post FIRST_MOCK_POST = new Post(UUID.randomUUID(),
-            "First test post",
-            "First test post description",
-            0L,
-            List.of("First tag", "Third tag"));
-    private final Post SECOND_MOCK_POST = new Post(UUID.randomUUID(),
-            "Second test post",
-            "Second test post description",
-            0L,
-            List.of("Fourth tag", "Fifth tag"));
-    private UUID firstMockPostId;
-    private UUID secondMockPostId;
-
     @Autowired
     public PostServiceImplTest(PostService postService, PostRepository postRepository) {
         this.postService = postService;
@@ -49,22 +36,35 @@ public class PostServiceImplTest {
 
     @BeforeEach
     public void beforeEach() {
-        firstMockPostId = postRepository.create(FIRST_MOCK_POST);
-        postRepository.addTags(firstMockPostId, FIRST_MOCK_POST.getTags());
+        postRepository.deleteAll();
 
-        secondMockPostId = postRepository.create(SECOND_MOCK_POST);
-        postRepository.addTags(secondMockPostId, SECOND_MOCK_POST.getTags());
+        Post firstMockPost = new Post(UUID.randomUUID(),
+                "First test post",
+                "First test post description",
+                0L,
+                List.of("First tag", "Third tag"));
+        Post secondMockPost = new Post(UUID.randomUUID(),
+                "Second test post",
+                "Second test post description",
+                0L,
+                List.of("Fourth tag", "Fifth tag"));
+
+        var firstMockPostId = postRepository.create(firstMockPost);
+        postRepository.addTags(firstMockPostId, firstMockPost.getTags());
+
+        var secondMockPostId = postRepository.create(secondMockPost);
+        postRepository.addTags(secondMockPostId, secondMockPost.getTags());
     }
 
     @AfterEach
     public void afterEach() {
-        postRepository.delete(firstMockPostId);
-        postRepository.delete(secondMockPostId);
+        postRepository.deleteAll();
     }
 
     @Test
     public void getById_shouldReturnPostById() {
-        PostResponseDto post = postService.getById(firstMockPostId);
+        var posts = postRepository.getAll("", 0, 10);
+        PostResponseDto post = postService.getById(posts.getFirst().getId());
 
         assertNotNull(post);
         assertEquals("First test post", post.getTitle());
@@ -119,11 +119,22 @@ public class PostServiceImplTest {
     }
 
     @Test
-    public void getAll_shouldReturnAllExistingPosts() {
+    public void getAll_shouldReturnOnePost() {
         PostPaginationResponseDto paginationResponseDto =
-                postService.getAll("", 0, 10);
+                postService.getAll("First test post", 0, 10);
 
         assertFalse(paginationResponseDto.getPosts().isEmpty());
+        assertEquals(1, paginationResponseDto.getPosts().size());
+        assertEquals(false, paginationResponseDto.getHasNext());
+        assertEquals(0, paginationResponseDto.getLastPage());
+    }
+
+    @Test
+    public void getAll_shouldReturnTwoPosts() {
+        PostPaginationResponseDto paginationResponseDto = postService.getAll("", 0, 10);
+
+        assertFalse(paginationResponseDto.getPosts().isEmpty());
+        assertEquals(2, paginationResponseDto.getPosts().size());
         assertEquals(0, paginationResponseDto.getLastPage());
     }
 
@@ -140,12 +151,10 @@ public class PostServiceImplTest {
 
     @Test
     public void update_shouldUpdatePost() {
-        FIRST_MOCK_POST.setTitle("Updated title");
-        FIRST_MOCK_POST.setText("Updated text");
-        FIRST_MOCK_POST.setTags(List.of("Updated tag"));
-
-        PostResponseDto responseDto = postService.update(firstMockPostId,
-                new PostRequestDto(FIRST_MOCK_POST.getTitle(), FIRST_MOCK_POST.getText(), FIRST_MOCK_POST.getTags()));
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        PostResponseDto responseDto = postService.update(firstPost.getId(),
+                new PostRequestDto("Updated title", "Updated text", List.of("Updated tag")));
 
         assertNotNull(responseDto);
         assertEquals("Updated title", responseDto.getTitle());
@@ -156,52 +165,43 @@ public class PostServiceImplTest {
     @Test
     public void update_shouldThrowExceptionForNotExistingPost() {
         assertThrows(NotFoundException.class, () -> postService.update(UUID.randomUUID(),
-                new PostRequestDto(
-                        FIRST_MOCK_POST.getTitle(),
-                        FIRST_MOCK_POST.getText(),
-                        FIRST_MOCK_POST.getTags())));
+                new PostRequestDto("First post title", "First post text", List.of("First tag"))));
     }
 
     @Test
     public void update_shouldThrowExceptionForTitle() {
-        FIRST_MOCK_POST.setTitle("");
-        FIRST_MOCK_POST.setText("Updated text");
-        FIRST_MOCK_POST.setTags(List.of("Updated tag"));
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
 
-        assertThrows(ValidationException.class, () -> postService.update(firstMockPostId,
-                new PostRequestDto(FIRST_MOCK_POST.getTitle(), FIRST_MOCK_POST.getText(), FIRST_MOCK_POST.getTags())));
+        assertThrows(ValidationException.class, () -> postService.update(firstPost.getId(),
+                new PostRequestDto("", firstPost.getText(), firstPost.getTags())));
     }
 
     @Test
     public void update_shouldThrowExceptionForText() {
-        FIRST_MOCK_POST.setTitle("Updated title");
-        FIRST_MOCK_POST.setText(null);
-        FIRST_MOCK_POST.setTags(List.of("Updated tag"));
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
 
-        assertThrows(ValidationException.class, () -> postService.update(firstMockPostId,
-                new PostRequestDto(FIRST_MOCK_POST.getTitle(), FIRST_MOCK_POST.getText(), FIRST_MOCK_POST.getTags())));
+        assertThrows(ValidationException.class, () -> postService.update(firstPost.getId(),
+                new PostRequestDto(firstPost.getTitle(), "", firstPost.getTags())));
     }
 
     @Test
     public void update_shouldThrowExceptionForTags() {
-        FIRST_MOCK_POST.setTitle("Updated title");
-        FIRST_MOCK_POST.setText("Updated text");
-        FIRST_MOCK_POST.setTags(List.of());
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
 
-        assertThrows(ValidationException.class, () -> postService.update(firstMockPostId,
-                new PostRequestDto(FIRST_MOCK_POST.getTitle(), FIRST_MOCK_POST.getText(), FIRST_MOCK_POST.getTags())));
+        assertThrows(ValidationException.class, () -> postService.update(firstPost.getId(),
+                new PostRequestDto(firstPost.getTitle(), firstPost.getText(), List.of())));
     }
 
     @Test
     public void delete_shouldThrowExceptionForDeletedPost() {
-        PostRequestDto postRequestDto = new PostRequestDto(
-                "First test post",
-                "First test post description",
-                List.of("First tag"));
-        PostResponseDto postResponseDto = postService.create(postRequestDto);
-        postService.delete(postResponseDto.getId());
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        postService.delete(firstPost.getId());
 
-        assertThrows(NotFoundException.class, () -> postService.getById(postResponseDto.getId()));
+        assertThrows(NotFoundException.class, () -> postService.getById(firstPost.getId()));
     }
 
     @Test
@@ -211,9 +211,11 @@ public class PostServiceImplTest {
 
     @Test
     public void incrementLike_shouldIncrementLikesByTwo() {
-        postService.incrementLike(firstMockPostId);
-        postService.incrementLike(firstMockPostId);
-        PostResponseDto responseDto = postService.getById(firstMockPostId);
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        postService.incrementLike(firstPost.getId());
+        postService.incrementLike(firstPost.getId());
+        PostResponseDto responseDto = postService.getById(firstPost.getId());
 
         assertEquals(2L, responseDto.getLikesCount());
     }

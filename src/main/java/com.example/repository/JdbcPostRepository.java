@@ -94,4 +94,9 @@ public class JdbcPostRepository implements PostRepository {
     public void deleteTags(UUID postId) {
         jdbcTemplate.update("delete from post_tags pt where pt.post_id = ?", postId);
     }
+
+    @Override
+    public void deleteAll() {
+        jdbcTemplate.update("delete from posts");
+    }
 }

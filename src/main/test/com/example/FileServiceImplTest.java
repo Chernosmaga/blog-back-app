@@ -33,8 +33,6 @@ public class FileServiceImplTest {
             "First test post description",
             0L,
             List.of("First tag", "Third tag"));
-    private final File MOCK_FILE =
-            new File(UUID.randomUUID(), "test.jpg", new byte[]{0, 1, 2, 3}, mockPostId);
 
     @Autowired
     public FileServiceImplTest(FileService fileService, PostRepository postRepository) {
@@ -56,8 +54,8 @@ public class FileServiceImplTest {
     @Test
     public void save_shouldSaveAndReturnFile() throws IOException {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file",
-                MOCK_FILE.getFilename(), "image/jpg", MOCK_FILE.getContent());
-        fileService.save(mockPostId, mockMultipartFile, MOCK_FILE.getFilename());
+                "test.jpg", "image/jpg", new byte[]{0, 1, 2, 3});
+        fileService.save(mockPostId, mockMultipartFile);
         File returned = fileService.get(mockPostId);
 
         assertNotNull(returned);
@@ -68,19 +66,19 @@ public class FileServiceImplTest {
     @Test
     public void save_shouldThrowExceptionIfPostNotFound() {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file",
-                MOCK_FILE.getFilename(), "image/jpg", MOCK_FILE.getContent());
+                "test.jpg", "image/jpg", new byte[]{0, 1, 2, 3});
 
         assertThrows(NotFoundException.class,
-                () -> fileService.save(UUID.randomUUID(), mockMultipartFile, MOCK_FILE.getFilename()));
+                () -> fileService.save(UUID.randomUUID(), mockMultipartFile));
     }
 
     @Test
     public void save_shouldThrowExceptionIfFileIsEmpty() {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file",
-                MOCK_FILE.getFilename(), "image/jpg", new byte[0]);
+                "test.jpg", "image/jpg", new byte[0]);
 
         assertThrows(ValidationException.class,
-                () -> fileService.save(UUID.randomUUID(), mockMultipartFile, MOCK_FILE.getFilename()));
+                () -> fileService.save(UUID.randomUUID(), mockMultipartFile));
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.exception.FileUploadException;
 import com.example.exception.ValidationException;
 import com.example.model.File;
 import com.example.repository.FileRepository;
@@ -19,18 +18,14 @@ public class FileServiceImpl implements FileService {
     private final UtilService utilService;
 
     @Override
-    public void save(UUID postId, MultipartFile file, String filename) throws IOException {
+    public void save(UUID postId, MultipartFile file) throws IOException {
         if (file.isEmpty()) throw new ValidationException("File is empty");
         utilService.postExists(postId);
 
-        String newFilename = UUID.randomUUID() + "_" + filename;
+        String newFilename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         byte[] content = file.getBytes();
 
-        try {
-            fileRepository.save(postId, newFilename, content);
-        } catch (Exception exception) {
-            throw new FileUploadException("Error occurred while trying to upload file");
-        }
+        fileRepository.save(postId, newFilename, content);
     }
 
     @Override
