@@ -19,22 +19,38 @@ public class JdbcPostRepository implements PostRepository {
 
     @Override
     public List<Post> getAll(String search, int pageNumber, int pageSize) {
-        return jdbcTemplate.query("select p.id, p.title, p.text, p.likes_count, " +
-                "string_agg(pt.tag, ',' order by pt.tag) as tags " +
-                "from posts p join post_tags pt on p.id = pt.post_id " +
-                "where p.title like concat('%', ?, '%') or p.text like concat('%', ?, '%') " +
-                "or pt.tag like concat('%', ?, '%')" +
-                "group by p.id, p.title, p.text, p.likes_count " +
-                "offset ? limit ?", new PostRowMapper(), search, search, search, pageNumber, pageSize);
+        if (search != null) {
+            return jdbcTemplate.query("select p.id, p.title, p.text, p.likes_count, " +
+                    "string_agg(pt.tag, ',' order by pt.tag) as tags " +
+                    "from posts p join post_tags pt on p.id = pt.post_id " +
+                    "where p.title like concat('%', ?, '%') or p.text like concat('%', ?, '%') " +
+                    "or pt.tag like concat('%', ?, '%') " +
+                    "group by p.id, p.title, p.text, p.likes_count " +
+                    "offset ? limit ?", new PostRowMapper(), search, search, search,
+                    pageNumber * pageSize, pageSize);
+        } else {
+            return jdbcTemplate.query("select p.id, p.title, p.text, p.likes_count, " +
+                    "string_agg(pt.tag, ',' order by pt.tag) as tags " +
+                    "from posts p left join post_tags pt on p.id = pt.post_id " +
+                    "group by p.id, p.title, p.text, p.likes_count " +
+                    "offset ? limit ?", new PostRowMapper(), pageNumber * pageSize, pageSize);
+        }
     }
 
     @Override
     public long countTotalPages(String search) {
-        Long count = jdbcTemplate.queryForObject("select count(*) " +
-                "from (select distinct(p.id) from posts p " +
-                "join post_tags pt on p.id = pt.post_id " +
-                "where p.title like concat('%', ?, '%') or p.text like concat('%', ?, '%') " +
-                "or pt.tag like concat('%', ?, '%')) as total_pages", Long.class, search, search, search);
+        Long count;
+        if (search != null) {
+            count = jdbcTemplate.queryForObject("select count(*) " +
+                    "from (select distinct(p.id) from posts p " +
+                    "join post_tags pt on p.id = pt.post_id " +
+                    "where p.title like concat('%', ?, '%') or p.text like concat('%', ?, '%') " +
+                    "or pt.tag like concat('%', ?, '%')) as total_pages", Long.class, search, search, search);
+        } else {
+            count = jdbcTemplate.queryForObject("select count(*) " +
+                    "from (select distinct(p.id) from posts p " +
+                    "left join post_tags pt on p.id = pt.post_id) as total_pages", Long.class);
+        }
         return count != null ? count : 0L;
     }
 
@@ -43,7 +59,7 @@ public class JdbcPostRepository implements PostRepository {
         return jdbcTemplate.queryForObject("select p.id, p.title, p.text, p.likes_count, " +
                         "string_agg(pt.tag, ',' order by pt.tag) as tags " +
                         "from posts p " +
-                        "join post_tags pt on p.id = pt.post_id " +
+                        "left join post_tags pt on p.id = pt.post_id " +
                         "where p.id = ? " +
                         "group by p.id, p.title, p.text, p.likes_count", new PostRowMapper(), postId);
     }

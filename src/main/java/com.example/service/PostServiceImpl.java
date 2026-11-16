@@ -11,6 +11,7 @@ import com.example.model.Post;
 import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,7 @@ public class PostServiceImpl implements PostService {
         long totalPages = (totalCount + pageSize - 1) / pageSize;
         long lastPage = (totalPages / pageSize);
 
-        responseDto.setPosts(posts.stream().map(postMapper::toPostResponseDto).toList());
+        responseDto.setPosts(posts.stream().map(this::toReturn).toList());
         responseDto.setHasPrev(lastPage > 0);
         responseDto.setHasNext(pageSize < totalPages - 1);
         responseDto.setLastPage(lastPage);
@@ -45,7 +46,7 @@ public class PostServiceImpl implements PostService {
         Post post;
         try {
             post = postRepository.getById(postId);
-        } catch (Exception exception) {
+        } catch (EmptyResultDataAccessException exception) {
             throw new NotFoundException("Required post was not found");
         }
         return toReturn(post);
@@ -85,6 +86,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void delete(UUID postId) {
         try {
+            postRepository.getById(postId);
             postRepository.delete(postId);
         } catch (Exception exception) {
             throw new NotFoundException("Post was not found");

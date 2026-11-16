@@ -1,6 +1,6 @@
 package com.example;
 
-import com.example.configuration.TestConfiguration;
+import com.example.configuration.RootTestConfiguration;
 import com.example.exception.NotFoundException;
 import com.example.exception.ValidationException;
 import com.example.model.File;
@@ -10,11 +10,10 @@ import com.example.service.FileService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,8 +21,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfiguration.class})
+@ActiveProfiles("test")
+@SpringJUnitConfig(classes = RootTestConfiguration.class)
 public class FileServiceImplTest {
     private final FileService fileService;
     private final PostRepository postRepository;

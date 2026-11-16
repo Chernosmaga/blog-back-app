@@ -1,6 +1,6 @@
 package com.example;
 
-import com.example.configuration.TestConfiguration;
+import com.example.configuration.RootTestConfiguration;
 import com.example.dto.CommentRequestDto;
 import com.example.dto.CommentResponseDto;
 import com.example.dto.PostResponseDto;
@@ -15,18 +15,17 @@ import com.example.service.PostService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfiguration.class})
+@ActiveProfiles("test")
+@SpringJUnitConfig(classes = RootTestConfiguration.class)
 public class CommentServiceImplTest {
     private final PostService postService;
     private final CommentRepository commentRepository;

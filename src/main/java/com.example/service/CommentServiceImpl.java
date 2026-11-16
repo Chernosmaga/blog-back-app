@@ -9,13 +9,13 @@ import com.example.model.Comment;
 import com.example.repository.CommentRepository;
 import com.example.utilities.UtilService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
@@ -31,6 +31,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentResponseDto getByIdAndPostId(UUID commentId, UUID postId) {
+        utilService.postExists(postId);
+
         Comment comment;
         try {
             comment = commentRepository.getByIdAndPostId(commentId, postId);
@@ -73,8 +75,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void delete(UUID postId, UUID commentId) {
+        utilService.postExists(postId);
+
         try {
-            commentRepository.getByIdAndPostId(commentId, postId);
             commentRepository.delete(postId, commentId);
         } catch (Exception exception) {
             throw new NotFoundException("Requested comment was not found");
