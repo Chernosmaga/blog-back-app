@@ -3,11 +3,13 @@ package com.example.dto;
 import com.example.exception.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class CommentRequestDto {
 
     private UUID postId;

@@ -63,7 +63,8 @@ public class PostServiceImplTest {
     @Test
     public void getById_shouldReturnPostById() {
         var posts = postRepository.getAll("", 0, 10);
-        PostResponseDto post = postService.getById(posts.getFirst().getId());
+        PostResponseDto post = postService.getById(posts.stream()
+                .filter(p -> "First test post".equals(p.getTitle())).toList().getFirst().getId());
 
         assertNotNull(post);
         assertEquals("First test post", post.getTitle());

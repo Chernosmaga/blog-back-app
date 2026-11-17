@@ -102,6 +102,16 @@ public class CommentServiceImplTest {
     }
 
     @Test
+    public void create_shouldThrowExceptionIfPostIdsAreNotEquals() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+
+        assertThrows(ValidationException.class,
+                () -> commentService.create(firstPost.getId(),
+                        new CommentRequestDto(UUID.randomUUID(), "New comment")));
+    }
+
+    @Test
     public void getByIdAndPostId_shouldReturnComment() {
         var posts = postRepository.getAll("", 0, 10);
         var firstPost = posts.getFirst();
@@ -224,6 +234,19 @@ public class CommentServiceImplTest {
         assertThrows(ValidationException.class,
                 () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
                 new CommentRequestDto(null, "Updated comment")));
+    }
+
+    @Test
+    public void update_shouldThrowExceptionIfPostIdsAreNotEquals() {
+        var posts = postRepository.getAll("", 0, 10);
+        var firstPost = posts.getFirst();
+        CommentResponseDto commentResponseDto =
+                commentService.create(firstPost.getId(),
+                        new CommentRequestDto(firstPost.getId(), "First comment"));
+
+        assertThrows(ValidationException.class,
+                () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
+                        new CommentRequestDto(UUID.randomUUID(), "Updated comment")));
     }
 
     @Test

@@ -46,6 +46,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto create(UUID postId, CommentRequestDto comment) {
         utilService.postExists(postId);
+        utilService.postIdsAreEquals(postId, comment.getPostId());
         comment.validate();
 
         UUID uuid;
@@ -61,6 +62,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto update(UUID postId, UUID commentId, CommentRequestDto comment) {
         utilService.postExists(postId);
+        utilService.postIdsAreEquals(postId, comment.getPostId());
         comment.validate();
 
         try {
@@ -78,6 +80,7 @@ public class CommentServiceImpl implements CommentService {
         utilService.postExists(postId);
 
         try {
+            commentRepository.getByIdAndPostId(commentId, postId);
             commentRepository.delete(postId, commentId);
         } catch (Exception exception) {
             throw new NotFoundException("Requested comment was not found");
@@ -87,5 +90,4 @@ public class CommentServiceImpl implements CommentService {
     private CommentResponseDto toReturn(UUID postId, Comment comment) {
         return new CommentResponseDto(comment.getId(), postId, comment.getText());
     }
-
 }

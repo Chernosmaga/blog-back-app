@@ -418,7 +418,7 @@ public class MainControllerTest {
         mockMvc.perform(post("/api/posts/{postId}/comments", postId)
                 .contentType(APPLICATION_JSON)
                 .content(request))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.text").value("Test comment"));
     }
@@ -445,7 +445,7 @@ public class MainControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(request))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Post id is required"));
+                .andExpect(jsonPath("$.message").value("The provided identifiers do not match"));
     }
 
     @Test
@@ -488,7 +488,7 @@ public class MainControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(request))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Post id is required"));
+                .andExpect(jsonPath("$.message").value("The provided identifiers do not match"));
     }
 
     @Test
