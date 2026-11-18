@@ -70,8 +70,8 @@ public class CommentServiceImplTest {
                         new CommentRequestDto(firstPost.getId(), "First comment"));
 
         assertNotNull(commentResponseDto);
-        assertEquals(firstPost.getId(), commentResponseDto.getPostId());
-        assertEquals("First comment", commentResponseDto.getText());
+        assertEquals(firstPost.getId(), commentResponseDto.postId());
+        assertEquals("First comment", commentResponseDto.text());
     }
 
     @Test
@@ -79,15 +79,6 @@ public class CommentServiceImplTest {
         UUID uuid = UUID.randomUUID();
         assertThrows(NotFoundException.class,
                 () -> commentService.create(uuid, new CommentRequestDto(uuid, "First comment")));
-    }
-
-    @Test
-    public void create_shouldThrowExceptionIfTextIsEmpty() {
-        var posts = postRepository.getAll("", 0, 10);
-        var firstPost = posts.getFirst();
-
-        assertThrows(ValidationException.class,
-                () -> commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "")));
     }
 
     @Test
@@ -118,11 +109,11 @@ public class CommentServiceImplTest {
                 commentService.create(firstPost.getId(),
                         new CommentRequestDto(firstPost.getId(), "Second comment"));
         CommentResponseDto returnedComment =
-                commentService.getByIdAndPostId(commentResponseDto.getId(), commentResponseDto.getPostId());
+                commentService.getByIdAndPostId(commentResponseDto.id(), commentResponseDto.postId());
 
         assertNotNull(returnedComment);
-        assertEquals("Second comment", returnedComment.getText());
-        assertEquals(firstPost.getId(), returnedComment.getPostId());
+        assertEquals("Second comment", returnedComment.text());
+        assertEquals(firstPost.getId(), returnedComment.postId());
     }
 
     @Test
@@ -134,7 +125,7 @@ public class CommentServiceImplTest {
                         new CommentRequestDto(firstPost.getId(), "Second comment"));
 
         assertThrows(NotFoundException.class,
-                () -> commentService.getByIdAndPostId(commentResponseDto.getId(), UUID.randomUUID()));
+                () -> commentService.getByIdAndPostId(commentResponseDto.id(), UUID.randomUUID()));
     }
 
     @Test
@@ -156,7 +147,7 @@ public class CommentServiceImplTest {
 
         assertFalse(comments.isEmpty());
         assertEquals(2, comments.size());
-        assertEquals("Second comment", comments.get(1).getText());
+        assertEquals("Second comment", comments.get(1).text());
     }
 
     @Test
@@ -180,12 +171,12 @@ public class CommentServiceImplTest {
         CommentResponseDto commentResponseDto =
                 commentService.create(firstPost.getId(),
                         new CommentRequestDto(firstPost.getId(), "First comment"));
-        CommentResponseDto updated = commentService.update(firstPost.getId(), commentResponseDto.getId(),
+        CommentResponseDto updated = commentService.update(firstPost.getId(), commentResponseDto.id(),
                 new CommentRequestDto(firstPost.getId(), "Updated comment"));
 
-        assertEquals("Updated comment", updated.getText());
-        assertEquals(firstPost.getId(), updated.getPostId());
-        assertEquals(commentResponseDto.getId(), updated.getId());
+        assertEquals("Updated comment", updated.text());
+        assertEquals(firstPost.getId(), updated.postId());
+        assertEquals(commentResponseDto.id(), updated.id());
     }
 
     @Test
@@ -197,7 +188,7 @@ public class CommentServiceImplTest {
                         new CommentRequestDto(firstPost.getId(), "First comment"));
         UUID uuid = UUID.randomUUID();
 
-        assertThrows(NotFoundException.class, () -> commentService.update(uuid, commentResponseDto.getId(),
+        assertThrows(NotFoundException.class, () -> commentService.update(uuid, commentResponseDto.id(),
                 new CommentRequestDto(uuid, "Updated comment")));
     }
 
@@ -211,18 +202,6 @@ public class CommentServiceImplTest {
     }
 
     @Test
-    public void update_shouldThrowExceptionIfTextIsEmpty() {
-        var posts = postRepository.getAll("", 0, 10);
-        var firstPost = posts.getFirst();
-        CommentResponseDto commentResponseDto =
-                commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "First comment"));
-
-        assertThrows(ValidationException.class,
-                () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
-                        new CommentRequestDto(firstPost.getId(), "")));
-    }
-
-    @Test
     public void update_shouldThrowExceptionIfPostIdIsNull() {
         var posts = postRepository.getAll("", 0, 10);
         var firstPost = posts.getFirst();
@@ -231,7 +210,7 @@ public class CommentServiceImplTest {
                         new CommentRequestDto(firstPost.getId(), "First comment"));
 
         assertThrows(ValidationException.class,
-                () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
+                () -> commentService.update(firstPost.getId(), commentResponseDto.id(),
                 new CommentRequestDto(null, "Updated comment")));
     }
 
@@ -244,7 +223,7 @@ public class CommentServiceImplTest {
                         new CommentRequestDto(firstPost.getId(), "First comment"));
 
         assertThrows(ValidationException.class,
-                () -> commentService.update(firstPost.getId(), commentResponseDto.getId(),
+                () -> commentService.update(firstPost.getId(), commentResponseDto.id(),
                         new CommentRequestDto(UUID.randomUUID(), "Updated comment")));
     }
 
@@ -255,10 +234,10 @@ public class CommentServiceImplTest {
         CommentResponseDto commentResponseDto =
                 commentService.create(firstPost.getId(),
                         new CommentRequestDto(firstPost.getId(), "First comment"));
-        commentService.delete(firstPost.getId(), commentResponseDto.getId());
+        commentService.delete(firstPost.getId(), commentResponseDto.id());
         PostResponseDto post = postService.getById(firstPost.getId());
 
-        assertEquals(0, (long) post.getCommentsCount());
+        assertEquals(0, (long) post.commentsCount());
     }
 
     @Test
@@ -277,6 +256,6 @@ public class CommentServiceImplTest {
         commentService.create(firstPost.getId(), new CommentRequestDto(firstPost.getId(), "Second comment"));
         var returnedPost = postService.getById(firstPost.getId());
 
-        assertEquals(2, returnedPost.getCommentsCount());
+        assertEquals(2, returnedPost.commentsCount());
     }
 }

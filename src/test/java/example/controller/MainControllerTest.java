@@ -130,7 +130,7 @@ public class MainControllerTest {
     }
 
     @Test
-    public void create_shouldCreatePost() throws Exception {
+    public void createPost_shouldCreatePost() throws Exception {
         var request = "{\"title\":\"Second post\",\"text\":\"Second post title\",\"tags\":[\"Second tag\"]}";
 
         mockMvc.perform(post("/api/posts")
@@ -144,42 +144,41 @@ public class MainControllerTest {
     }
 
     @Test
-    public void create_shouldThrowExceptionIfTitleIsEmpty() throws Exception {
+    public void createPost_shouldThrowExceptionIfTitleIsEmpty() throws Exception {
         var request = "{\"title\":\"\",\"text\":\"Second post title\",\"tags\":[\"Second tag\"]}";
 
         mockMvc.perform(post("/api/posts")
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Title is required but wasn't provided"));
     }
 
     @Test
-    public void create_shouldThrowExceptionIfTextIsEmpty() throws Exception {
+    public void createPost_shouldThrowExceptionIfTextIsEmpty() throws Exception {
         var request = "{\"title\":\"Second title\",\"text\":\"\",\"tags\":[\"Second tag\"]}";
 
         mockMvc.perform(post("/api/posts")
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Text field is required but not present"));
-
     }
 
     @Test
-    public void create_shouldThrowExceptionIfTagsAreEmpty() throws Exception {
+    public void createPost_shouldThrowExceptionIfTagsAreEmpty() throws Exception {
         var request = "{\"title\":\"Second title\",\"text\":\"Second post text\",\"tags\":[]}";
 
         mockMvc.perform(post("/api/posts")
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Tags are required but not provided"));
 
     }
 
     @Test
-    public void update_shouldUpdatePostById() throws Exception {
+    public void updatePost_shouldUpdatePostById() throws Exception {
         var request = "{\"title\":\"Updated title\",\"text\":\"Updated post text\",\"tags\":[\"Updated tag\"]}";
         var postId = jdbcTemplate.queryForObject("select p.id from posts p " +
                 "where p.title = 'First post'", UUID.class);
@@ -194,7 +193,7 @@ public class MainControllerTest {
     }
 
     @Test
-    public void update_shouldThrowExceptionIfTitleIsEmpty() throws Exception {
+    public void updatePost_shouldThrowExceptionIfTitleIsEmpty() throws Exception {
         var request = "{\"title\":\"\",\"text\":\"Updated post text\",\"tags\":[\"Updated tag\"]}";
         var postId = jdbcTemplate.queryForObject("select p.id from posts p " +
                 "where p.title = 'First post'", UUID.class);
@@ -202,13 +201,13 @@ public class MainControllerTest {
         mockMvc.perform(put("/api/posts/{postId}", postId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Title is required but wasn't provided"));
 
     }
 
     @Test
-    public void update_shouldThrowExceptionIfTextIsEmpty() throws Exception {
+    public void updatePost_shouldThrowExceptionIfTextIsEmpty() throws Exception {
         var request = "{\"title\":\"Updated title\",\"text\":\"\",\"tags\":[\"Updated tag\"]}";
         var postId = jdbcTemplate.queryForObject("select p.id from posts p " +
                 "where p.title = 'First post'", UUID.class);
@@ -216,13 +215,13 @@ public class MainControllerTest {
         mockMvc.perform(put("/api/posts/{postId}", postId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Text field is required but not present"));
 
     }
 
     @Test
-    public void update_shouldThrowExceptionIfTagsAreEmpty() throws Exception {
+    public void updatePost_shouldThrowExceptionIfTagsAreEmpty() throws Exception {
         var request = "{\"title\":\"Updated title\",\"text\":\"Updated post text\",\"tags\":[]}";
         var postId = jdbcTemplate.queryForObject("select p.id from posts p " +
                 "where p.title = 'First post'", UUID.class);
@@ -230,12 +229,12 @@ public class MainControllerTest {
         mockMvc.perform(put("/api/posts/{postId}", postId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Tags are required but not provided"));
     }
 
     @Test
-    public void update_shouldThrowExceptionIfPostWasNotFound() throws Exception {
+    public void updatePost_shouldThrowExceptionIfPostWasNotFound() throws Exception {
         var request = "{\"title\":\"Second title\",\"text\":\"Second post text\",\"tags\":[\"Second tag\"]}";
 
         mockMvc.perform(put("/api/posts/{postId}", UUID.randomUUID())
@@ -246,7 +245,7 @@ public class MainControllerTest {
     }
 
     @Test
-    public void delete_shouldDeletePost() throws Exception {
+    public void deletePost_shouldDeletePost() throws Exception {
         var postId = jdbcTemplate.queryForObject("select p.id from posts p " +
                 "where p.title = 'First post'", UUID.class);
 
@@ -255,7 +254,7 @@ public class MainControllerTest {
     }
 
     @Test
-    public void delete_shouldThrowExceptionIfPostWasNotFound() throws Exception {
+    public void deletePost_shouldThrowExceptionIfPostWasNotFound() throws Exception {
         mockMvc.perform(delete("/api/posts/{postId}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Requested post was not found"));
@@ -311,7 +310,7 @@ public class MainControllerTest {
                             request.setMethod("PUT");
                             return request;
                         }))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -346,7 +345,7 @@ public class MainControllerTest {
                 "where p.title = 'Second post'", UUID.class);
 
         mockMvc.perform(get("/api/posts/{postId}/image", postId))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -444,8 +443,8 @@ public class MainControllerTest {
         mockMvc.perform(post("/api/posts/{postId}/comments", postId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("The provided identifiers do not match"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Post id is required"));
     }
 
     @Test
@@ -457,7 +456,7 @@ public class MainControllerTest {
         mockMvc.perform(post("/api/posts/{postId}/comments", postId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Required text field is not present"));
     }
 
@@ -487,8 +486,8 @@ public class MainControllerTest {
         mockMvc.perform(put("/api/posts/{postId}/comments/{commentId}", postId, commentId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("The provided identifiers do not match"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Post id is required"));
     }
 
     @Test
@@ -502,7 +501,7 @@ public class MainControllerTest {
         mockMvc.perform(put("/api/posts/{postId}/comments/{commentId}", postId, commentId)
                         .contentType(APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Required text field is not present"));
     }
 

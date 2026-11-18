@@ -4,7 +4,6 @@ import com.example.dto.PostPaginationResponseDto;
 import com.example.dto.PostRequestDto;
 import com.example.dto.PostResponseDto;
 import com.example.exception.NotFoundException;
-import com.example.exception.ValidationException;
 import com.example.model.Post;
 import com.example.repository.PostRepository;
 import com.example.service.PostService;
@@ -67,10 +66,10 @@ public class PostServiceImplTest {
                 .filter(p -> "First test post".equals(p.getTitle())).toList().getFirst().getId());
 
         assertNotNull(post);
-        assertEquals("First test post", post.getTitle());
-        assertEquals("First test post description", post.getText());
-        assertEquals(0L, post.getLikesCount());
-        assertEquals(List.of("First tag", "Third tag"), post.getTags());
+        assertEquals("First test post", post.title());
+        assertEquals("First test post description", post.text());
+        assertEquals(0L, post.likesCount());
+        assertEquals(List.of("First tag", "Third tag"), post.tags());
     }
 
     @Test
@@ -87,35 +86,11 @@ public class PostServiceImplTest {
         PostResponseDto postResponseDto = postService.create(postRequestDto);
 
         assertNotNull(postResponseDto);
-        assertEquals("First test post", postResponseDto.getTitle());
-        assertEquals("First test post description", postResponseDto.getText());
-        assertEquals(0L, postResponseDto.getLikesCount());
-        assertEquals(List.of("First tag"), postResponseDto.getTags());
-        assertEquals(0L, postResponseDto.getCommentsCount());
-    }
-
-    @Test
-    public void create_shouldThrowValidationExceptionForTitle() {
-        PostRequestDto postRequestDto =
-                new PostRequestDto(null, "First test post description", List.of("First tag"));
-
-        assertThrows(ValidationException.class, () -> postService.create(postRequestDto));
-    }
-
-    @Test
-    public void create_shouldThrowValidationExceptionForText() {
-        PostRequestDto postRequestDto =
-                new PostRequestDto("First test post", "", List.of("First tag"));
-
-        assertThrows(ValidationException.class, () -> postService.create(postRequestDto));
-    }
-
-    @Test
-    public void create_shouldThrowValidationExceptionForTags() {
-        PostRequestDto postRequestDto =
-                new PostRequestDto("First test post", "First test post description", List.of());
-
-        assertThrows(ValidationException.class, () -> postService.create(postRequestDto));
+        assertEquals("First test post", postResponseDto.title());
+        assertEquals("First test post description", postResponseDto.text());
+        assertEquals(0L, postResponseDto.likesCount());
+        assertEquals(List.of("First tag"), postResponseDto.tags());
+        assertEquals(0L, postResponseDto.commentsCount());
     }
 
     @Test
@@ -123,19 +98,19 @@ public class PostServiceImplTest {
         PostPaginationResponseDto paginationResponseDto =
                 postService.getAll("First test post", 0, 10);
 
-        assertFalse(paginationResponseDto.getPosts().isEmpty());
-        assertEquals(1, paginationResponseDto.getPosts().size());
-        assertEquals(false, paginationResponseDto.getHasNext());
-        assertEquals(0, paginationResponseDto.getLastPage());
+        assertFalse(paginationResponseDto.posts().isEmpty());
+        assertEquals(1, paginationResponseDto.posts().size());
+        assertEquals(false, paginationResponseDto.hasNext());
+        assertEquals(0, paginationResponseDto.lastPage());
     }
 
     @Test
     public void getAll_shouldReturnTwoPosts() {
         PostPaginationResponseDto paginationResponseDto = postService.getAll("", 0, 10);
 
-        assertFalse(paginationResponseDto.getPosts().isEmpty());
-        assertEquals(2, paginationResponseDto.getPosts().size());
-        assertEquals(0, paginationResponseDto.getLastPage());
+        assertFalse(paginationResponseDto.posts().isEmpty());
+        assertEquals(2, paginationResponseDto.posts().size());
+        assertEquals(0, paginationResponseDto.lastPage());
     }
 
     @Test
@@ -143,10 +118,10 @@ public class PostServiceImplTest {
         PostPaginationResponseDto paginationResponseDto =
                 postService.getAll("no data", 0, 10);
 
-        assertTrue(paginationResponseDto.getPosts().isEmpty());
-        assertEquals(0, paginationResponseDto.getLastPage());
-        assertEquals(false, paginationResponseDto.getHasNext());
-        assertEquals(false, paginationResponseDto.getHasPrev());
+        assertTrue(paginationResponseDto.posts().isEmpty());
+        assertEquals(0, paginationResponseDto.lastPage());
+        assertEquals(false, paginationResponseDto.hasNext());
+        assertEquals(false, paginationResponseDto.hasPrev());
     }
 
     @Test
@@ -157,42 +132,15 @@ public class PostServiceImplTest {
                 new PostRequestDto("Updated title", "Updated text", List.of("Updated tag")));
 
         assertNotNull(responseDto);
-        assertEquals("Updated title", responseDto.getTitle());
-        assertEquals("Updated text", responseDto.getText());
-        assertEquals(List.of("Updated tag"), responseDto.getTags());
+        assertEquals("Updated title", responseDto.title());
+        assertEquals("Updated text", responseDto.text());
+        assertEquals(List.of("Updated tag"), responseDto.tags());
     }
 
     @Test
     public void update_shouldThrowExceptionForNotExistingPost() {
         assertThrows(NotFoundException.class, () -> postService.update(UUID.randomUUID(),
                 new PostRequestDto("First post title", "First post text", List.of("First tag"))));
-    }
-
-    @Test
-    public void update_shouldThrowExceptionForTitle() {
-        var posts = postRepository.getAll("", 0, 10);
-        var firstPost = posts.getFirst();
-
-        assertThrows(ValidationException.class, () -> postService.update(firstPost.getId(),
-                new PostRequestDto("", firstPost.getText(), firstPost.getTags())));
-    }
-
-    @Test
-    public void update_shouldThrowExceptionForText() {
-        var posts = postRepository.getAll("", 0, 10);
-        var firstPost = posts.getFirst();
-
-        assertThrows(ValidationException.class, () -> postService.update(firstPost.getId(),
-                new PostRequestDto(firstPost.getTitle(), "", firstPost.getTags())));
-    }
-
-    @Test
-    public void update_shouldThrowExceptionForTags() {
-        var posts = postRepository.getAll("", 0, 10);
-        var firstPost = posts.getFirst();
-
-        assertThrows(ValidationException.class, () -> postService.update(firstPost.getId(),
-                new PostRequestDto(firstPost.getTitle(), firstPost.getText(), List.of())));
     }
 
     @Test
@@ -217,7 +165,7 @@ public class PostServiceImplTest {
         postService.incrementLike(firstPost.getId());
         PostResponseDto responseDto = postService.getById(firstPost.getId());
 
-        assertEquals(2L, responseDto.getLikesCount());
+        assertEquals(2L, responseDto.likesCount());
     }
 
     @Test
