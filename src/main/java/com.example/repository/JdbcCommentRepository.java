@@ -54,4 +54,10 @@ public class JdbcCommentRepository implements CommentRepository {
     public void deleteAll() {
         jdbcTemplate.update("delete from comments");
     }
+
+    @Override
+    public Comment getById(UUID commentId) {
+        return jdbcTemplate.queryForObject("select c.id, c.text from comments c where c.id = ?",
+                new CommentRowMapper(), commentId);
+    }
 }

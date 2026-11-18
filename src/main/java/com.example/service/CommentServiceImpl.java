@@ -2,13 +2,13 @@ package com.example.service;
 
 import com.example.dto.CommentRequestDto;
 import com.example.dto.CommentResponseDto;
-import com.example.exception.DataViolationException;
 import com.example.exception.NotFoundException;
 import com.example.mapper.CommentMapper;
 import com.example.model.Comment;
 import com.example.repository.CommentRepository;
 import com.example.utilities.UtilService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +36,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment;
         try {
             comment = commentRepository.getByIdAndPostId(commentId, postId);
-        } catch (Exception exception) {
+        } catch (EmptyResultDataAccessException exception) {
             throw new NotFoundException("Comment was not found");
         }
         return toReturn(postId, comment);
@@ -49,12 +49,7 @@ public class CommentServiceImpl implements CommentService {
         utilService.postIdsAreEquals(postId, comment.getPostId());
         comment.validate();
 
-        UUID uuid;
-        try {
-            uuid = commentRepository.create(postId, commentMapper.toComment(comment));
-        } catch (Exception exception) {
-            throw new DataViolationException("Unable to add comment");
-        }
+        UUID uuid = commentRepository.create(postId, commentMapper.toComment(comment));
         return toReturn(postId, commentRepository.getByIdAndPostId(uuid, postId));
     }
 
@@ -63,14 +58,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseDto update(UUID postId, UUID commentId, CommentRequestDto comment) {
         utilService.postExists(postId);
         utilService.postIdsAreEquals(postId, comment.getPostId());
+        utilService.commentExists(commentId);
         comment.validate();
 
-        try {
-            commentRepository.getByIdAndPostId(commentId, postId);
-            commentRepository.update(postId, commentId, comment.getText());
-        } catch (Exception exception) {
-            throw new DataViolationException("Unable to update comment");
-        }
+        commentRepository.update(postId, commentId, comment.getText());
         return toReturn(postId, commentRepository.getByIdAndPostId(commentId, postId));
     }
 
@@ -78,13 +69,9 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void delete(UUID postId, UUID commentId) {
         utilService.postExists(postId);
+        utilService.commentExists(commentId);
 
-        try {
-            commentRepository.getByIdAndPostId(commentId, postId);
-            commentRepository.delete(postId, commentId);
-        } catch (Exception exception) {
-            throw new NotFoundException("Requested comment was not found");
-        }
+        commentRepository.delete(postId, commentId);
     }
 
     private CommentResponseDto toReturn(UUID postId, Comment comment) {

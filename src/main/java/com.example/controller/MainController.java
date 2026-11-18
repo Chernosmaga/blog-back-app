@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,24 +62,15 @@ public class MainController {
 
     @PutMapping("/{postId}/image")
     public ResponseEntity<?> saveImage(@PathVariable("postId") UUID postId,
-                                       @RequestParam("image") MultipartFile image) {
-        try {
-            fileService.save(postId, image);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
+                                       @RequestParam("image") MultipartFile image) throws IOException {
+        fileService.save(postId, image);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{postId}/image")
     public ResponseEntity<?> getImage(@PathVariable("postId") UUID postId) {
-        File file;
-        try {
-            file = fileService.get(postId);
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(file.getContent());
-        } catch (Exception exception) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
+        File file = fileService.get(postId);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(file.getContent());
     }
 
     @GetMapping("/{postId}/comments")

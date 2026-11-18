@@ -4,12 +4,12 @@ import com.example.dto.LikesCountResponseDto;
 import com.example.dto.PostPaginationResponseDto;
 import com.example.dto.PostRequestDto;
 import com.example.dto.PostResponseDto;
-import com.example.exception.DataViolationException;
 import com.example.exception.NotFoundException;
 import com.example.mapper.PostMapper;
 import com.example.model.Post;
 import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
+import com.example.utilities.UtilService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -22,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final UtilService utilService;
     private final CommentRepository commentRepository;
     private final PostMapper postMapper;
 
@@ -56,13 +57,9 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostResponseDto create(PostRequestDto requestDto) {
         requestDto.validate();
-        UUID uuid;
-        try {
-            uuid = postRepository.create(postMapper.toPost(requestDto));
-            postRepository.addTags(uuid, requestDto.getTags());
-        } catch (Exception exception) {
-            throw new DataViolationException("Unable to create post");
-        }
+
+        UUID uuid = postRepository.create(postMapper.toPost(requestDto));
+        postRepository.addTags(uuid, requestDto.getTags());
         return toReturn(postRepository.getById(uuid));
     }
 
@@ -70,38 +67,28 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostResponseDto update(UUID postId, PostRequestDto requestDto) {
         requestDto.validate();
-        Post post;
-        try {
-            postRepository.update(postId, requestDto.getTitle(), requestDto.getText());
-            postRepository.deleteTags(postId);
-            postRepository.addTags(postId, requestDto.getTags());
-            post = postRepository.getById(postId);
-        } catch (Exception exception) {
-            throw new NotFoundException("Required post was not found");
-        }
-        return toReturn(post);
+        utilService.postExists(postId);
+
+        postRepository.update(postId, requestDto.getTitle(), requestDto.getText());
+        postRepository.deleteTags(postId);
+        postRepository.addTags(postId, requestDto.getTags());
+        return toReturn(postRepository.getById(postId));
     }
 
     @Override
     @Transactional
     public void delete(UUID postId) {
-        try {
-            postRepository.getById(postId);
-            postRepository.delete(postId);
-        } catch (Exception exception) {
-            throw new NotFoundException("Post was not found");
-        }
+        utilService.postExists(postId);
+
+        postRepository.delete(postId);
     }
 
     @Override
     @Transactional
     public LikesCountResponseDto incrementLike(UUID postId) {
-        long likes;
-        try {
-            likes = postRepository.incrementLike(postId);
-        } catch (Exception exception) {
-            throw new NotFoundException("Required post was not found");
-        }
+        utilService.postExists(postId);
+
+        long likes = postRepository.incrementLike(postId);
         return new LikesCountResponseDto(likes);
     }
 
