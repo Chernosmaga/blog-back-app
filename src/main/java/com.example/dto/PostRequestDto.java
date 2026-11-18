@@ -1,26 +1,10 @@
 package com.example.dto;
 
-import com.example.exception.ValidationException;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class PostRequestDto {
-
-    private String title;
-
-    private String text;
-
-    private List<String> tags;
-
-    public void validate() {
-        if (title == null || title.isEmpty()) throw new ValidationException("Title is required but wasn't provided");
-        if (text == null || text.isEmpty()) throw new ValidationException("Text field is required but not present");
-        if (tags.isEmpty()) throw new ValidationException("Tags are required but not provided");
-    }
-}
+public record PostRequestDto(@NotBlank(message = "Title is required but wasn't provided") String title,
+                             @NotBlank(message = "Text field is required but not present") String text,
+                             @Size(min = 1, message = "Tags are required but not provided") List<String> tags) {}

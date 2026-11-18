@@ -8,6 +8,7 @@ import com.example.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,12 +41,13 @@ public class MainController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public PostResponseDto createPost(@RequestBody PostRequestDto requestDto) {
+    public PostResponseDto createPost(@Validated @RequestBody PostRequestDto requestDto) {
         return postService.create(requestDto);
     }
 
     @PutMapping("/{postId}")
-    public PostResponseDto updatePost(@PathVariable("postId") UUID postId, @RequestBody PostRequestDto requestDto) {
+    public PostResponseDto updatePost(@PathVariable("postId") UUID postId,
+                                      @Validated @RequestBody PostRequestDto requestDto) {
         return postService.update(postId, requestDto);
     }
 
@@ -87,14 +89,14 @@ public class MainController {
     @PostMapping("/{postId}/comments")
     @ResponseStatus(CREATED)
     public CommentResponseDto createComment(@PathVariable("postId") UUID postId,
-                                            @RequestBody CommentRequestDto comment) {
+                                            @Validated @RequestBody CommentRequestDto comment) {
         return commentService.create(postId, comment);
     }
 
     @PutMapping("/{postId}/comments/{commentId}")
     public CommentResponseDto updateComment(@PathVariable("postId") UUID postId,
                                             @PathVariable("commentId") UUID commentId,
-                                            @RequestBody CommentRequestDto comment) {
+                                            @Validated @RequestBody CommentRequestDto comment) {
         return commentService.update(postId, commentId, comment);
     }
 

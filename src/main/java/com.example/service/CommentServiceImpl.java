@@ -46,8 +46,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto create(UUID postId, CommentRequestDto comment) {
         utilService.postExists(postId);
-        utilService.postIdsAreEquals(postId, comment.getPostId());
-        comment.validate();
+        utilService.postIdsAreEquals(postId, comment.postId());
 
         UUID uuid = commentRepository.create(postId, commentMapper.toComment(comment));
         return toReturn(postId, commentRepository.getByIdAndPostId(uuid, postId));
@@ -57,11 +56,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto update(UUID postId, UUID commentId, CommentRequestDto comment) {
         utilService.postExists(postId);
-        utilService.postIdsAreEquals(postId, comment.getPostId());
+        utilService.postIdsAreEquals(postId, comment.postId());
         utilService.commentExists(commentId);
-        comment.validate();
 
-        commentRepository.update(postId, commentId, comment.getText());
+        commentRepository.update(postId, commentId, comment.text());
         return toReturn(postId, commentRepository.getByIdAndPostId(commentId, postId));
     }
 

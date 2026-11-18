@@ -28,18 +28,17 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostPaginationResponseDto getAll(String search, int pageNumber, int pageSize) {
-        PostPaginationResponseDto responseDto = new PostPaginationResponseDto();
         List<Post> posts = postRepository.getAll(search, pageNumber, pageSize);
 
         long totalCount = postRepository.countTotalPages(search);
         long totalPages = (totalCount + pageSize - 1) / pageSize;
         long lastPage = (totalPages / pageSize);
 
-        responseDto.setPosts(posts.stream().map(this::toReturn).toList());
-        responseDto.setHasPrev(lastPage > 0);
-        responseDto.setHasNext(pageSize < totalPages - 1);
-        responseDto.setLastPage(lastPage);
-        return responseDto;
+        return new PostPaginationResponseDto(
+                posts.stream().map(this::toReturn).toList(),
+                lastPage > 0,
+                pageSize < totalPages - 1,
+                lastPage);
     }
 
     @Override
@@ -56,22 +55,19 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostResponseDto create(PostRequestDto requestDto) {
-        requestDto.validate();
-
         UUID uuid = postRepository.create(postMapper.toPost(requestDto));
-        postRepository.addTags(uuid, requestDto.getTags());
+        postRepository.addTags(uuid, requestDto.tags());
         return toReturn(postRepository.getById(uuid));
     }
 
     @Override
     @Transactional
     public PostResponseDto update(UUID postId, PostRequestDto requestDto) {
-        requestDto.validate();
         utilService.postExists(postId);
 
-        postRepository.update(postId, requestDto.getTitle(), requestDto.getText());
+        postRepository.update(postId, requestDto.title(), requestDto.text());
         postRepository.deleteTags(postId);
-        postRepository.addTags(postId, requestDto.getTags());
+        postRepository.addTags(postId, requestDto.tags());
         return toReturn(postRepository.getById(postId));
     }
 
@@ -94,7 +90,6 @@ public class PostServiceImpl implements PostService {
 
     private PostResponseDto toReturn(Post post) {
         PostResponseDto response = postMapper.toPostResponseDto(post);
-        response.setCommentsCount(commentRepository.countForPost(post.getId()));
-        return response;
+        return response.withCommentsCount(commentRepository.countForPost(post.getId()));
     }
 }

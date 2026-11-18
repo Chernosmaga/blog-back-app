@@ -1,23 +1,9 @@
 package com.example.dto;
 
-import com.example.exception.ValidationException;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CommentRequestDto {
-
-    private UUID postId;
-
-    private String text;
-
-    public void validate() {
-        if (postId == null) throw new ValidationException("Post id is required");
-        if (text == null || text.isEmpty()) throw new ValidationException("Required text field is not present");
-    }
-}
+public record CommentRequestDto(@NotNull(message = "Post id is required") UUID postId,
+                                @NotBlank(message = "Required text field is not present") String text) {}
