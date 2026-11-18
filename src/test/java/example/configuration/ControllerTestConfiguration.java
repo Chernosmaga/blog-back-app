@@ -1,4 +1,4 @@
-package com.example.configuration;
+package example.configuration;
 
 import com.example.controller.ExceptionController;
 import com.example.controller.MainController;

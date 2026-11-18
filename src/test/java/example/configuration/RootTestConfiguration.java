@@ -1,4 +1,4 @@
-package com.example.configuration;
+package example.configuration;
 
 import com.example.mapper.CommentMapper;
 import com.example.mapper.PostMapper;
@@ -24,9 +24,10 @@ public class RootTestConfiguration {
     @Bean
     @Profile("test")
     public PostService postService(PostRepository postRepository,
+                                   UtilService utilService,
                                    CommentRepository commentRepository,
                                    PostMapper postMapper) {
-        return new PostServiceImpl(postRepository, commentRepository, postMapper);
+        return new PostServiceImpl(postRepository, utilService, commentRepository, postMapper);
     }
 
     @Bean
@@ -63,8 +64,8 @@ public class RootTestConfiguration {
 
     @Bean
     @Profile("test")
-    public UtilService utilService(PostRepository postRepository) {
-        return new UtilService(postRepository);
+    public UtilService utilService(PostRepository postRepository, CommentRepository commentRepository) {
+        return new UtilService(postRepository, commentRepository);
     }
 
     @Bean

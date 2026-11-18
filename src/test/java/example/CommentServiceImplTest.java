@@ -1,10 +1,8 @@
-package com.example;
+package example;
 
-import com.example.configuration.RootTestConfiguration;
 import com.example.dto.CommentRequestDto;
 import com.example.dto.CommentResponseDto;
 import com.example.dto.PostResponseDto;
-import com.example.exception.DataViolationException;
 import com.example.exception.NotFoundException;
 import com.example.exception.ValidationException;
 import com.example.model.Post;
@@ -12,6 +10,7 @@ import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import com.example.service.CommentService;
 import com.example.service.PostService;
+import example.configuration.RootTestConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -207,7 +206,7 @@ public class CommentServiceImplTest {
         var posts = postRepository.getAll("", 0, 10);
         var firstPost = posts.getFirst();
 
-        assertThrows(DataViolationException.class, () -> commentService.update(firstPost.getId(), UUID.randomUUID(),
+        assertThrows(NotFoundException.class, () -> commentService.update(firstPost.getId(), UUID.randomUUID(),
                 new CommentRequestDto(firstPost.getId(), "Updated comment")));
     }
 

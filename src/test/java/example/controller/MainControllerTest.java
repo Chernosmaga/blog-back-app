@@ -1,6 +1,6 @@
-package com.example.controller;
+package example.controller;
 
-import com.example.configuration.ControllerTestConfiguration;
+import example.configuration.ControllerTestConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,7 +242,7 @@ public class MainControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(request))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Required post was not found"));
+                .andExpect(jsonPath("$.message").value("Requested post was not found"));
     }
 
     @Test
@@ -258,7 +258,7 @@ public class MainControllerTest {
     public void delete_shouldThrowExceptionIfPostWasNotFound() throws Exception {
         mockMvc.perform(delete("/api/posts/{postId}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Post was not found"));
+                .andExpect(jsonPath("$.message").value("Requested post was not found"));
     }
 
     @Test
@@ -281,7 +281,7 @@ public class MainControllerTest {
     public void incrementLike_shouldThrowExceptionIfPostWasNotFound() throws Exception {
         mockMvc.perform(post("/api/posts/{postId}/likes", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Required post was not found"));
+                .andExpect(jsonPath("$.message").value("Requested post was not found"));
     }
 
     @Test
@@ -547,6 +547,6 @@ public class MainControllerTest {
                 "where p.title = 'First post'", UUID.class);
 
         mockMvc.perform(delete("/api/posts/{postId}/comments/{commentId}", postId, UUID.randomUUID()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNotFound());
     }
 }

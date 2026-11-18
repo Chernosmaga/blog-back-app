@@ -1,4 +1,4 @@
-package com.example.configuration;
+package example.configuration;
 
 import org.postgresql.Driver;
 import org.springframework.beans.factory.annotation.Value;

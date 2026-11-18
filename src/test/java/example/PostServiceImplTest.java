@@ -1,6 +1,5 @@
-package com.example;
+package example;
 
-import com.example.configuration.RootTestConfiguration;
 import com.example.dto.PostPaginationResponseDto;
 import com.example.dto.PostRequestDto;
 import com.example.dto.PostResponseDto;
@@ -9,6 +8,7 @@ import com.example.exception.ValidationException;
 import com.example.model.Post;
 import com.example.repository.PostRepository;
 import com.example.service.PostService;
+import example.configuration.RootTestConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
