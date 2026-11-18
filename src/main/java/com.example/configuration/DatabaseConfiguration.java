@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,7 +37,7 @@ public class DatabaseConfiguration {
     }
 
     @EventListener
-    public void populate(ContextRefreshedEvent event) {
+    public void populate(ContextStartedEvent event) {
         DataSource dataSource = event.getApplicationContext().getBean(DataSource.class);
 
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
