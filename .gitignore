@@ -6,6 +6,15 @@ src/main/resources/application.properties
 *.env
 .env.local
 
+.gradle/
+build/
+!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+application-local.properties
+application-dev.properties
+application-prod.properties
+
 .idea/
 *.iml
 *.iws
@@ -55,3 +64,4 @@ lib/
 
 .metadata/
 docker-compose.override.yml
+/src/test/resources/application.properties
