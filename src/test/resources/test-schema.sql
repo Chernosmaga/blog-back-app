@@ -1,0 +1,33 @@
+DROP TABLE IF EXISTS post_tags CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS files CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+
+CREATE TABLE posts (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    text VARCHAR(10000) NOT NULL,
+    likes_count BIGINT DEFAULT 0
+);
+
+CREATE TABLE post_tags (
+    post_id UUID NOT NULL,
+    tag VARCHAR(50) NOT NULL,
+    PRIMARY KEY (post_id, tag),
+    CONSTRAINT fk_post_tags_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE comments (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    post_id UUID NOT NULL,
+    text VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE files (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    content BLOB NOT NULL,
+    post_id UUID UNIQUE NOT NULL,
+    CONSTRAINT fk_files_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+);

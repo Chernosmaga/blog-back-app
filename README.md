@@ -115,6 +115,18 @@ DELETE /api/posts/{postId}/comments/{id} - удаление комментари
 ```
 
 ## Тестирование
+
+Приложение использует базу данных H2 для тестов. Необходимо создать конфигурационный файл в тестовой папке:
+
+```
+spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.username=test
+spring.datasource.password=test
+
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:test-schema.sql
+```
+
 ### Запуск тестов:
 
 ```
