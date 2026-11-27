@@ -32,6 +32,6 @@ public class Post {
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 }

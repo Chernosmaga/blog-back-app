@@ -15,4 +15,7 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     @Query("select c from Comment c where c.id = :commentId and c.post.id = :postId")
     Optional<Comment> findByIdAndPostId(UUID commentId, UUID postId);
+
+    @Query("select count(distinct c.id) from Comment c where c.post.id = :postId")
+    long countAllByPostId(UUID postId);
 }

@@ -1,5 +1,6 @@
 package com.example.blog_back_app.post.service;
 
+import com.example.blog_back_app.comment.repository.CommentRepository;
 import com.example.blog_back_app.file.repository.FileRepository;
 import com.example.blog_back_app.post.dto.LikesCountResponseDto;
 import com.example.blog_back_app.post.dto.PostPaginationResponseDto;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final FileRepository fileRepository;
+    private final CommentRepository commentRepository;
     private final UtilService utilService;
     private final PostMapper postMapper;
 
@@ -29,14 +31,14 @@ public class PostServiceImpl implements PostService {
     public PostPaginationResponseDto getAll(String search, int pageNumber, int pageSize) {
         Page<Post> posts = postRepository.getAll(search, PageRequest.of(pageNumber, pageSize));
 
-        long totalPages = (posts.getTotalPages() + pageSize - 1) / pageSize;
+        long totalPages = posts.getTotalPages();
         long lastPage = (totalPages / pageSize);
 
         return new PostPaginationResponseDto(
                 posts.stream().map(this::toReturn).toList(),
                 lastPage > 0,
                 pageSize < totalPages - 1,
-                (long) posts.getTotalPages()
+                totalPages
         );
     }
 
@@ -79,6 +81,6 @@ public class PostServiceImpl implements PostService {
 
     private PostResponseDto toReturn(Post post) {
         PostResponseDto response = postMapper.toPostResponseDto(post);
-        return response.withCommentsCount((long) post.getComments().size());
+        return response.withCommentsCount(commentRepository.countAllByPostId(post.getId()));
     }
 }
