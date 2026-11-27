@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
@@ -74,6 +75,30 @@ class FileServiceImplTest {
 
         assertTrue(saved.getFilename().contains("test.jpg"));
         assertEquals(postId, saved.getPost().getId());
+    }
+
+    @Test
+    public void save_shouldSaveFileAndUpdateIt() throws Exception {
+        var post = postRepository.save(MOCK_POST);
+        var postId = post.getId();
+        var mockMultipartFile = new MockMultipartFile("file",
+                "test.jpg", "image/jpg", new byte[]{0, 1, 2, 3});
+        fileService.save(postId, mockMultipartFile);
+
+        var toUpdateMockMultipartFile = new MockMultipartFile("file",
+                "updated.jpg", "image/jpg", new byte[]{3, 2, 1, 0});
+        fileService.save(postId, toUpdateMockMultipartFile);
+        var returned = fileService.get(postId);
+
+        assertNotNull(returned);
+        assertArrayEquals(new byte[]{3, 2, 1, 0}, returned.getContent());
+        assertEquals(postId, returned.getPost().getId());
+
+        var fileArgumentCaptor = ArgumentCaptor.forClass(File.class);
+        verify(fileRepository, times(2)).save(fileArgumentCaptor.capture());
+        var saved = fileArgumentCaptor.getAllValues().get(1);
+
+        assertTrue(saved.getFilename().contains("updated.jpg"));
     }
 
     @Test
