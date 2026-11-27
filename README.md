@@ -2,28 +2,25 @@
 
 ## Описание проекта
 
-Бэкенд-приложение для системы блогов, разработанное на базе Spring Framework (без Spring Boot). Приложение предоставляет REST API для управления постами, комментариями и пользователями блога.
+Бэкенд-приложение для системы блогов, разработанное на базе Spring Boot. Приложение предоставляет REST API для управления постами, комментариями и фотографиями блога.
 
 ## Технологический стек
 
 ### Основные технологии
-- **Java 21** - язык программирования
-- **Spring Framework 6.2.1** - фреймворк для построения веб-приложений
-- **Spring MVC** - модуль для обработки HTTP-запросов и реализации паттерна MVC
-- **Jakarta Servlet API 4.0.2** - спецификация для сервлетов
-- **Apache Tomcat** - servlet container для развертывания приложения
+- **Java 25** - язык программирования
+- **Spring Boot 4.2.0** - фреймворк для построения веб-приложений
+- **Spring Boot Starter WebMvc** - стартер для обработки HTTP-запросов и реализации паттерна MVC
+- **Spring Boot Starter Validation** - валидация входящих данных
 
 ### Работа с данными
-- **Spring Data JDBC 3.4.1** - упрощенная работа с реляционными базами данных через JDBC
-- **PostgreSQL Driver 42.7.3** - драйвер для подключения к базе данных PostgreSQL
-
-### Сериализация/Десериализация
-- **Jackson Databind 2.17.0** - преобразование Java объектов в JSON и обратно
-- **Jackson Core 2.17.0** - базовая функциональность для работы с JSON
-- **Jackson Annotations 2.17.0** - аннотации для настройки сериализации
+- **Spring Boot Starter Data JPA** - стартер для работы с JPA репозиториями
+- **PostgreSQL Driver** - драйвер для подключения к базе данных PostgreSQL
+- **Mapstruct** - библиотека для генерации маппингов сущностей
+- **Lombok** - библиотека для генерации конструкторов, сеттеров, геттеров и т.д.
 
 ### Тестирование
-- **JUnit 5.7.0** - фреймворк для модульного тестирования
+- **JUnit** - фреймворк для модульного тестирования
+- **H2 Database** - база данных для тестового стенда
 
 ## Архитектура приложения
 
@@ -38,36 +35,48 @@
 - Java 17 или выше
 - Apache Tomcat 9.x или выше
 - PostgreSQL 12 или выше
-- Maven 3.6+
+- Gradle 9+ или выше
 
 ## Конфигурация базы данных
 
 Приложение использует PostgreSQL. Необходимо создать базу данных и настроить подключение в конфигурационном файле:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/blog_db
-spring.datasource.username=your_username
-spring.datasource.password=your_password
+spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:schema.sql
 ```
 
 ## Сборка и запуск
 ### Сборка проекта
 
-```
-mvn clean package
-```
-
-### Развертывание
-#### Собранный WAR-файл необходимо разместить в директории webapps сервера Tomcat:
+#### macOS
 
 ```
-cp target/blog-backend.war $CATALINA_HOME/webapps/
+./gradlew clean build
 ```
 
-### Запуск Tomcat
+#### windows
 
 ```
-%CATALINA_HOME%\bin\startup.bat
+gradlew.bat clean build
+```
+
+### Запуск проекта
+
+#### macOS
+
+```
+./gradlew bootRun
+```
+
+#### windows
+
+```
+gradlew.bat bootRun
 ```
 
 ## API Endpoints
@@ -106,8 +115,20 @@ DELETE /api/posts/{postId}/comments/{id} - удаление комментари
 ```
 
 ## Тестирование
+
+Приложение использует базу данных H2 для тестов. Необходимо создать конфигурационный файл в тестовой папке:
+
+```
+spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.username=test
+spring.datasource.password=test
+
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:test-schema.sql
+```
+
 ### Запуск тестов:
 
 ```
-mvn test
+./gradlew test
 ```
